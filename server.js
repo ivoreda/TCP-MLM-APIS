@@ -23,7 +23,7 @@ const upload = multer({
 // connectDb();
 mongoose
   .connect(
-    "mongodb+srv://focus123:Memon4231@cluster0.66jjnzy.mongodb.net/?retryWrites=true&w=majority",
+    process.env.MONGODB_KEY,
     {
       useNewUrlParser: true,
       useUnifiedTopology: true,
