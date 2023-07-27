@@ -15,16 +15,10 @@ const app = express();
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-const storage = multer.diskStorage({
-  destination: "./uploads",
-  filename: function (req, file, cb) {
-    cb(
-      null,
-      file.fieldname + "-" + Date.now() + path.extname(file.originalname)
-    );
-  },
+
+const upload = multer({
+  storage: multer.memoryStorage(), // Use memory storage instead of disk storage
 });
-const upload = multer({ storage: storage });
 
 // connectDb();
 mongoose
@@ -793,6 +787,7 @@ app.post("/addRequest", upload.single("image"), async (req, res) => {
   const { email, referralCode, package, amount } = req.body;
   const reqq = await Requests.findOne({ email: email });
   const user = await User.findOne({ email: email });
+
   if (reqq) {
     if (reqq.Decision === "Not Decided") {
       return res.status(400).json({ error: "Request already sent" });
@@ -800,9 +795,11 @@ app.post("/addRequest", upload.single("image"), async (req, res) => {
       return res.status(400).json({ error: "You have already invested" });
     }
   }
+
   if (!req.file) {
     return res.status(400).json({ error: "No image file provided" });
   }
+
   console.log(req.body.email);
   const filename = `${Date.now()}-${path.basename(
     req.file.originalname
@@ -822,6 +819,8 @@ app.post("/addRequest", upload.single("image"), async (req, res) => {
 
     // Get the URL to the uploaded image
     const imageLink = `https://storage.googleapis.com/${bucketName}/${filename}`;
+    console.log("Image uploaded successfully!", imageLink);
+
     const newRequest = new Requests({
       email,
       referralCode,
